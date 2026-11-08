@@ -1,0 +1,252 @@
+-- MEXICAN RESTAURANT TYCOON
+-- MAP GENERATOR
+-- Roblox Studio Lite - Luau
+
+local Workspace = game:GetService("Workspace")
+local Lighting = game:GetService("Lighting")
+
+local oldMap = Workspace:FindFirstChild("MexicanRestaurantMap")
+if oldMap then
+	oldMap:Destroy()
+end
+
+local Map = Instance.new("Folder")
+Map.Name = "MexicanRestaurantMap"
+Map.Parent = Workspace
+
+local function part(name, size, position, color, material, parent)
+	local p = Instance.new("Part")
+	p.Name = name
+	p.Size = size
+	p.Position = position
+	p.Anchored = true
+	p.Color = color
+	p.Material = material or Enum.Material.SmoothPlastic
+	p.TopSurface = Enum.SurfaceType.Smooth
+	p.BottomSurface = Enum.SurfaceType.Smooth
+	p.Parent = parent or Map
+	return p
+end
+
+local function model(name)
+	local m = Instance.new("Model")
+	m.Name = name
+	m.Parent = Map
+	return m
+end
+
+-- COLORS
+local cream = Color3.fromRGB(245, 220, 170)
+local red = Color3.fromRGB(170, 45, 35)
+local orange = Color3.fromRGB(230, 125, 45)
+local green = Color3.fromRGB(55, 125, 70)
+local brown = Color3.fromRGB(105, 65, 40)
+local dark = Color3.fromRGB(45, 42, 38)
+
+-- GROUND
+part("Main Plaza", Vector3.new(320, 2, 320), Vector3.new(0, -1, 0),
+	Color3.fromRGB(205, 190, 160), Enum.Material.Concrete)
+
+-- ROADS
+part("Main Road", Vector3.new(320, 0.3, 24), Vector3.new(0, 0.1, 0),
+	dark, Enum.Material.Asphalt)
+
+part("Cross Road", Vector3.new(24, 0.3, 320), Vector3.new(0, 0.12, 0),
+	dark, Enum.Material.Asphalt)
+
+-- ROAD LINES
+for x = -145, 145, 25 do
+	part("Road Marking", Vector3.new(12, 0.1, 0.5),
+		Vector3.new(x, 0.3, 0), Color3.new(1,1,1))
+end
+
+for z = -145, 145, 25 do
+	part("Road Marking", Vector3.new(0.5, 0.1, 12),
+		Vector3.new(0, 0.3, z), Color3.new(1,1,1))
+end
+
+-- SIDEWALKS
+for _, position in ipairs({
+	Vector3.new(0, 0.1, 16),
+	Vector3.new(0, 0.1, -16),
+	Vector3.new(16, 0.1, 0),
+	Vector3.new(-16, 0.1, 0)
+}) do
+	part("Sidewalk", Vector3.new(320, 0.4, 5), position,
+		Color3.fromRGB(225, 215, 190), Enum.Material.Concrete)
+end
+
+-- RESTAURANT PLOT
+local function createRestaurant(name, x, z, number)
+	local plot = model(name)
+
+	part("Plot Floor", Vector3.new(66, 1, 66),
+		Vector3.new(x, 0.5, z), Color3.fromRGB(190, 165, 125),
+		Enum.Material.Concrete, plot)
+
+	-- BUILDING WALLS
+	part("Back Wall", Vector3.new(38, 16, 2),
+		Vector3.new(x, 9, z + 12), cream, Enum.Material.Plaster, plot)
+
+	part("Left Wall", Vector3.new(2, 16, 24),
+		Vector3.new(x - 18, 9, z), cream, Enum.Material.Plaster, plot)
+
+	part("Right Wall", Vector3.new(2, 16, 24),
+		Vector3.new(x + 18, 9, z), cream, Enum.Material.Plaster, plot)
+
+	-- ROOF
+	part("Red Roof", Vector3.new(42, 2, 30),
+		Vector3.new(x, 18, z), red, Enum.Material.RoofShingles, plot)
+
+	-- FRONT COUNTER
+	part("Restaurant Counter", Vector3.new(25, 4, 3),
+		Vector3.new(x, 3, z - 9), brown, Enum.Material.Wood, plot)
+
+	part("Counter Top", Vector3.new(26, 0.6, 4),
+		Vector3.new(x, 5.3, z - 9), cream, Enum.Material.Marble, plot)
+
+	-- KITCHEN
+	part("Kitchen Counter", Vector3.new(12, 3, 3),
+		Vector3.new(x - 10, 2.5, z + 5), dark, Enum.Material.Metal, plot)
+
+	part("Cooking Station", Vector3.new(5, 2, 4),
+		Vector3.new(x - 10, 5, z + 5), orange, Enum.Material.Metal, plot)
+
+	-- SIGN
+	local sign = part("Restaurant Sign", Vector3.new(20, 4, 1),
+		Vector3.new(x, 14, z - 13), red, Enum.Material.Wood, plot)
+
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = Enum.NormalId.Front
+	gui.Parent = sign
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundTransparency = 1
+	label.Text = "RESTAURANT " .. number
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.TextScaled = true
+	label.Font = Enum.Font.GothamBold
+	label.Parent = gui
+
+	-- TABLES
+	for i = 1, 3 do
+		local tx = x - 12 + (i * 12)
+
+		part("Patio Table", Vector3.new(6, 0.5, 6),
+			Vector3.new(tx, 3, z - 23), brown, Enum.Material.Wood, plot)
+
+		for _, offset in ipairs({
+			Vector3.new(-2, 1, -2),
+			Vector3.new(2, 1, -2),
+			Vector3.new(-2, 1, 2),
+			Vector3.new(2, 1, 2)
+		}) do
+			part("Chair", Vector3.new(2, 2, 2),
+				Vector3.new(tx + offset.X, 2, z - 23 + offset.Z),
+				red, Enum.Material.Wood, plot)
+		end
+	end
+
+	-- DECORATION
+	for i = -2, 2 do
+		part("Wall Decoration", Vector3.new(3, 3, 0.3),
+			Vector3.new(x + i * 6, 9, z + 10),
+			orange, Enum.Material.SmoothPlastic, plot)
+	end
+end
+
+-- SIX PLOTS
+createRestaurant("Restaurant Plot 1", -85, -65, 1)
+createRestaurant("Restaurant Plot 2", 85, -65, 2)
+createRestaurant("Restaurant Plot 3", -85, 65, 3)
+createRestaurant("Restaurant Plot 4", 85, 65, 4)
+createRestaurant("Restaurant Plot 5", -65, -120, 5)
+createRestaurant("Restaurant Plot 6", 65, 120, 6)
+
+-- CENTRAL FOUNTAIN
+local fountain = model("Central Fountain")
+
+part("Fountain Base", Vector3.new(22, 2, 22),
+	Vector3.new(0, 1, 0), cream, Enum.Material.Marble, fountain)
+
+local water = part("Water", Vector3.new(18, 1, 18),
+	Vector3.new(0, 2.5, 0), Color3.fromRGB(60, 160, 210),
+	Enum.Material.Glass, fountain)
+water.Transparency = 0.25
+
+part("Fountain Center", Vector3.new(5, 7, 5),
+	Vector3.new(0, 6, 0), orange, Enum.Material.Marble, fountain)
+
+-- TREES
+local function createTree(x, z)
+	local tree = model("Plaza Tree")
+
+	part("Trunk", Vector3.new(3, 12, 3),
+		Vector3.new(x, 6, z), brown, Enum.Material.Wood, tree)
+
+	local leaves = part("Leaves", Vector3.new(13, 13, 13),
+		Vector3.new(x, 15, z), green, Enum.Material.Grass, tree)
+
+	leaves.Shape = Enum.PartType.Ball
+end
+
+for x = -140, 140, 35 do
+	createTree(x, -140)
+	createTree(x, 140)
+end
+
+for z = -105, 105, 35 do
+	createTree(-140, z)
+	createTree(140, z)
+end
+
+-- STREET LAMPS
+local function createLamp(x, z)
+	local lamp = model("Street Lamp")
+
+	part("Pole", Vector3.new(1, 13, 1),
+		Vector3.new(x, 6.5, z), dark, Enum.Material.Metal, lamp)
+
+	local lightPart = part("Lamp", Vector3.new(3, 2, 3),
+		Vector3.new(x, 13, z), Color3.fromRGB(255, 220, 140),
+		Enum.Material.Neon, lamp)
+
+	local light = Instance.new("PointLight")
+	light.Brightness = 2
+	light.Range = 22
+	light.Parent = lightPart
+end
+
+for x = -100, 100, 50 do
+	createLamp(x, -35)
+	createLamp(x, 35)
+end
+
+-- PAPEL PICADO
+for x = -30, 30, 6 do
+	local flag = part("Papel Picado",
+		Vector3.new(4, 3, 0.3),
+		Vector3.new(x, 17, -18),
+		orange, Enum.Material.SmoothPlastic)
+
+	flag.CanCollide = false
+end
+
+-- LIGHTING
+Lighting.ClockTime = 17
+Lighting.Brightness = 2
+Lighting.Ambient = Color3.fromRGB(145, 130, 110)
+Lighting.OutdoorAmbient = Color3.fromRGB(170, 155, 130)
+
+local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
+if not atmosphere then
+	atmosphere = Instance.new("Atmosphere")
+	atmosphere.Parent = Lighting
+end
+
+atmosphere.Density = 0.25
+atmosphere.Offset = 0.1
+atmosphere.Color = Color3.fromRGB(255, 220, 180)
+
+print("Mexican Restaurant Tycoon map created successfully!")
